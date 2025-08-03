@@ -1,8 +1,9 @@
 import type { Request, Response } from 'express'
 import User from '../models/User';
-import { hashPass } from '../utils/auth';
-import { generateToken } from '../utils/token';
+import { checkPass, hashPass } from '../utils/auth';
 import { AuthEmail } from '../email/AuthEmail';
+import { generateJWT } from '../utils/jwt';
+import { generateToken } from '../utils/token';
 
 export class AuthController {
     static createAcount = async (req: Request, res: Response) => {
@@ -34,7 +35,7 @@ export class AuthController {
 
     static confirmAcount = async (req: Request, res: Response) => {
         const { token } = req.body;
-        const user = await User.findOne({ where: { token }});
+        const user = await User.findOne({ where: { token } });
         if (!user) {
             const { message } = new Error('Token no válido');
             res.status(401).json({ error: message });
@@ -42,9 +43,36 @@ export class AuthController {
         }
 
         user.confirm = true;
-        user.token = null; 
+        user.token = null;
         await user.save();
 
         res.json('Cuenta confirmada correctametne');
+    }
+
+    static login = async (req: Request, res: Response) => {
+        const { email, password } = req.body;
+        const user = await User.findOne({ where: { email } });
+        if (!user) {
+            const { message } = new Error('Usuario no encontrado');
+            res.status(404).json({ error: message });
+            return;
+        }
+        if (!user.confirm) {
+            const { message } = new Error('La cuenta no a sido confirmada');
+            res.status(403).json({ error: message });
+            return;
+        }
+        
+        const isPassCorrect = await checkPass(password, user.password);
+        
+        if (!isPassCorrect) {
+            const { message } = new Error('Password incorrecto');
+            res.status(401).json({ error: message });
+            return;
+        }
+
+        const token = generateJWT(user.id);
+
+        res.json(token);
     }
 }

@@ -27,4 +27,13 @@ router.post('/confrim-account',
     AuthController.confirmAcount
 );
 
+router.post('/login',
+    body('email')
+        .isEmail().withMessage('E-mail no válido'),
+    body('password')
+        .notEmpty().withMessage('El password es obligatorio'),
+    handleInputErrors,
+    AuthController.login
+);
+
 export default router
