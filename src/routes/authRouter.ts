@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { AuthController } from "../controllers/AuthController";
-import { body } from "express-validator";
+import { body, param } from "express-validator";
 import { handleInputErrors } from "../middleware/validator";
 import { limiter } from "../config/limiter";
 
@@ -28,12 +28,41 @@ router.post('/confrim-account',
 );
 
 router.post('/login',
+    limiter,
     body('email')
         .isEmail().withMessage('E-mail no válido'),
     body('password')
         .notEmpty().withMessage('El password es obligatorio'),
     handleInputErrors,
     AuthController.login
+);
+
+router.post('/forgot-password',
+    body('email')
+        .isEmail().withMessage('E-mail no válido'),
+    handleInputErrors,
+    AuthController.forgotPass
+);
+
+router.post('/validate-token',
+    limiter,
+    body('token')
+        .notEmpty()
+        .isLength({ min: 6, max: 6 })
+        .withMessage('Token no válido'),
+    handleInputErrors,
+    AuthController.validateToken
+);
+
+router.post('/reset-password/:token',
+    param('token')
+        .notEmpty()
+        .isLength({ min: 6, max: 6 })
+        .withMessage('Token no válido'),
+    body('password')
+        .isLength({ min: 8 }).withMessage('El password debe de tener mínimo 8 caracteres'),
+    handleInputErrors,
+    AuthController.resetPassWithToken
 );
 
 export default router

@@ -14,6 +14,7 @@ export class AuthController {
             res.status(409).json({ error: message });
             return;
         }
+
         try {
             const user = new User(req.body);
             user.password = await hashPass(password);
@@ -62,9 +63,9 @@ export class AuthController {
             res.status(403).json({ error: message });
             return;
         }
-        
+
         const isPassCorrect = await checkPass(password, user.password);
-        
+
         if (!isPassCorrect) {
             const { message } = new Error('Password incorrecto');
             res.status(401).json({ error: message });
@@ -75,4 +76,56 @@ export class AuthController {
 
         res.json(token);
     }
+
+    static forgotPass = async (req: Request, res: Response) => {
+        const { email, password } = req.body;
+        const user = await User.findOne({ where: { email } });
+        if (!user) {
+            const { message } = new Error('El usuario ya existe');
+            res.status(409).json({ error: message });
+            return;
+        }
+
+        user.token = generateToken();
+        await user.save();
+
+        await AuthEmail.sendPassResetToken({
+            name: user.name,
+            email: user.email,
+            token: user.token,
+        });
+
+        res.json('Revisa tu E-mail para instrucciones');
+    }
+
+    static validateToken = async (req: Request, res: Response) => {
+        const { token } = req.body;
+        const tokenExists = await User.findOne({ where: { token } });
+        if (!tokenExists) {
+            const { message } = new Error('Token no válido');
+            res.status(404).json(message);
+            return;
+        }
+
+        res.json('Token válido')
+    }
+
+    static resetPassWithToken = async (req: Request, res: Response) => {
+        const { token } = req.params;
+        const { password } = req.body;
+
+        const user = await User.findOne({ where: { token } });
+        if (!user) {
+            const { message } = new Error('Token no válido');
+            res.status(404).json(message);
+            return;
+        }
+
+        user.password = await hashPass(password);
+        user.token = null;
+        await user.save();
+
+        res.json('El password se modificó correctamente');
+    }
+    
 }
