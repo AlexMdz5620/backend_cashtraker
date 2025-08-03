@@ -1,4 +1,5 @@
 import type { Request, Response } from 'express'
+import jwt from 'jsonwebtoken';
 import User from '../models/User';
 import { checkPass, hashPass } from '../utils/auth';
 import { AuthEmail } from '../email/AuthEmail';
@@ -103,7 +104,7 @@ export class AuthController {
         const tokenExists = await User.findOne({ where: { token } });
         if (!tokenExists) {
             const { message } = new Error('Token no válido');
-            res.status(404).json(message);
+            res.status(404).json({ error: message });
             return;
         }
 
@@ -117,7 +118,7 @@ export class AuthController {
         const user = await User.findOne({ where: { token } });
         if (!user) {
             const { message } = new Error('Token no válido');
-            res.status(404).json(message);
+            res.status(404).json({ error: message });
             return;
         }
 
@@ -128,4 +129,7 @@ export class AuthController {
         res.json('El password se modificó correctamente');
     }
     
+    static user = async (req: Request, res: Response) => {
+        res.json(req.user);
+    }
 }
