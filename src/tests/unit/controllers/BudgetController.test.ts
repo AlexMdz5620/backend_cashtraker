@@ -1,15 +1,13 @@
 import { createRequest, createResponse } from "node-mocks-http";
-import { budgets } from '../mocks/budgets';
-import { BudgetController } from "../../controllers/BudgetController";
-import Budget from "../../models/Budget";
-import Expense from "../../models/Expense";
+import { budgets } from '../../mocks/budgets';
+import { BudgetController } from "../../../controllers/BudgetController";
+import Budget from "../../../models/Budget";
+import Expense from "../../../models/Expense";
 
-jest.mock('../../models/Budget', () => ({
+jest.mock('../../../models/Budget', () => ({
     findAll: jest.fn(),
     create: jest.fn(),
     findByPk: jest.fn(),
-    updateById: jest.fn(),
-    deleteById: jest.fn(),
 }));
 
 describe('BudgetController.getAll', () => {
@@ -138,6 +136,7 @@ describe('BudgetController.create', () => {
 
 describe('BudgetController.getById', () => {
     beforeEach(() => {
+        jest.clearAllMocks();
         (Budget.findByPk as jest.Mock).mockImplementation(id => {
             const budget = budgets.filter(b => b.id === id)[0];
             return Promise.resolve(budget);
@@ -185,7 +184,7 @@ describe('BudgetController.getById', () => {
         expect(res.statusCode).toBe(200);
         expect(data.expenses).toHaveLength(0);
         expect(Budget.findByPk).toHaveBeenCalled();
-        expect(Budget.findByPk).toHaveBeenCalledTimes(3);
+        expect(Budget.findByPk).toHaveBeenCalledTimes(1);
         expect(Budget.findByPk).toHaveBeenCalledWith(req.budget.id, { include: [Expense] });
     });
 });
@@ -233,6 +232,5 @@ describe('BudgetController.deleteById', () => {
         expect(data).toBe('Presupuesto eliminado correctamente');
         expect(budgetMock.destroy).toHaveBeenCalled();
         expect(budgetMock.destroy).toHaveBeenCalledTimes(1);
-        // expect(budgetMock.destroy).toHaveBeenCalledWith(req.budget);
     });
 });
