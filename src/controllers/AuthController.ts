@@ -10,13 +10,13 @@ export class AuthController {
         const { email, password } = req.body;
         const userExist = await User.findOne({ where: { email } });
         if (userExist) {
-            const { message } = new Error('El usuario ya existe');
+            const { message } = new Error('El usuario con este email ya está registrado');
             res.status(409).json({ error: message });
             return;
         }
 
         try {
-            const user = new User(req.body);
+            const user = await User.create(req.body);
             user.password = await hashPass(password);
             user.token = generateToken();
             await user.save();
@@ -27,7 +27,7 @@ export class AuthController {
                 token: user.token,
             })
 
-            res.json('Cuenta creada correctamente');
+            res.status(201).json('Cuenta creada correctamente');
         } catch (error) {
             // console.error(error);
             res.status(500).json({ error: 'Hubo un error' });
