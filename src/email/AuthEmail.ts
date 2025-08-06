@@ -19,7 +19,7 @@ export class AuthEmail {
                 <p>E ingresa el código: <b>${user.token}</b></p>`,
         });
 
-        console.log('Mensaje enviado correctamente:', email.messageId);
+        // console.log('Mensaje enviado correctamente:', email.messageId);
     }
 
     static sendPassResetToken = async (user: EmailType) => {
