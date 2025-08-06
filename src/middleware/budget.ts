@@ -56,7 +56,7 @@ export const validateBundgeInput = async (req: Request, res: Response, next: Nex
     next();
 }
 
-export function hasAcces (req: Request, res: Response, next: NextFunction) {
+export function hasAccess (req: Request, res: Response, next: NextFunction) {
     if (req.budget.userId !== req.user.id) {
         const { message } = new Error('Acción no válida');
         res.status(401).json({ error: message });

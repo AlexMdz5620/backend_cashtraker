@@ -1,5 +1,5 @@
 import { createRequest, createResponse } from 'node-mocks-http';
-import { hasAcces, validateBundgeExists } from '../../../middleware/budget';
+import { hasAccess, validateBundgeExists } from '../../../middleware/budget';
 import Budget from '../../../models/Budget';
 import { budgets } from '../../mocks/budgets';
 
@@ -67,7 +67,7 @@ describe('Budget Middleware - hasAcces', () => {
         const res = createResponse();
         const next = jest.fn();
 
-        hasAcces(req, res, next);
+        hasAccess(req, res, next);
         expect(next).toHaveBeenCalled();
         expect(next).toHaveBeenCalledTimes(1);
     });
@@ -80,7 +80,7 @@ describe('Budget Middleware - hasAcces', () => {
         const res = createResponse();
         const next = jest.fn();
 
-        hasAcces(req, res, next);
+        hasAccess(req, res, next);
         expect(next).not.toHaveBeenCalled();
         expect(res.statusCode).toBe(401);
         expect(res._getJSONData()).toEqual({ error: 'Acción no válida' });
