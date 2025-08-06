@@ -90,4 +90,43 @@ describe('Auth - Create Account', () => {
         expect(response.statusCode).not.toBe(201);
         expect(response.body).not.toHaveProperty('errors');
     });
-})
+});
+
+describe('Auth - Account Confirmation with Token or not valid', () => {
+    it('should display error if token is empty', async () => {
+        const response = await request(server)
+            .post('/api/auth/confrim-account')
+            .send({
+                token: "not_valid",
+            });
+
+        expect(response.status).toBe(400);
+        expect(response.body).toHaveProperty('errors');
+        expect(response.body.errors).toHaveLength(1);
+        expect(response.body.errors[0].msg).toBe('Token no válido');
+    });
+
+    it('should display error if token doesnt exist', async () => {
+        const response = await request(server)
+            .post('/api/auth/confrim-account')
+            .send({
+                token: "123456",
+            });
+
+        expect(response.status).toBe(401);
+        expect(response.body).toHaveProperty('error');
+        expect(response.body.error).toBe('Token no válido');
+        expect(response.status).not.toBe(200);
+    });
+
+    it('should confirm account with a valid token', async () => {
+        const token = globalThis.cashTrackrConfirmationToken
+        const response = await request(server)
+            .post('/api/auth/confrim-account')
+            .send({ token });
+            
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual('Cuenta confirmada correctametne');
+        expect(response.status).not.toBe(400);
+    });
+});
