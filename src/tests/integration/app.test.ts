@@ -298,20 +298,24 @@ describe('Auth - Login', () => {
     });
 });
 
+let jwt: string;
+async function authUser() {
+    const res = await request(server)
+        .post('/api/auth/login')
+        .send({
+            email: 'test@test.code',
+            password: 'password'
+        });
+    jwt = res.body;
+}
+
 describe('Get /api/budgets', () => {
-    let jwt: string;
     beforeAll(() => {
         jest.restoreAllMocks();
     });
 
     beforeAll(async () => {
-        const res = await request(server)
-            .post('/api/auth/login')
-            .send({
-                email: 'test@test.code',
-                password: 'password'
-            });
-        jwt = res.body;
+        await authUser();
     });
 
     it('should reject unauthenticated access to budgets without jwt', async () => {
@@ -343,16 +347,26 @@ describe('Get /api/budgets', () => {
     });
 });
 
-describe('Get /api/budgets', () => {
-    let jwt: string;
+describe('POST /api/budgets', () => {
     beforeAll(async () => {
-        const res = await request(server)
-            .post('/api/auth/login')
-            .send({
-                email: 'test@test.code',
-                password: 'password'
-            });
-        jwt = res.body;
-        expect(res.status).toBe(200)
+        await authUser();
     });
-})
+
+    it('should reject unauthenticated post request to budgets without jwt', async () => {
+        const res = await request(server)
+            .post('/api/budgets');
+
+        expect(res.status).toBe(401);
+        expect(res.body.error).toBe('No Autorizado');
+    });
+
+    it('should display validation when the form is submitted with invalid data', async () => {
+        const res = await request(server)
+            .post('/api/budgets')
+            .auth(jwt, { type: 'bearer' })
+            .send({});
+
+        expect(res.status).toBe(400);
+        expect(res.body.errors).toHaveLength(4);
+    });
+});
