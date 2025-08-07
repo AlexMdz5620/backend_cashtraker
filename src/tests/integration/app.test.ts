@@ -264,7 +264,7 @@ describe('Auth - Login', () => {
         expect(checkPass).toHaveBeenCalledTimes(1);
     });
 
-    it('should return 401 error if the password is incorrect', async () => {
+    it('should return jwt', async () => {
         const findOne = (jest.spyOn(User, 'findOne') as jest.Mock)
             .mockResolvedValue({
                 id: 1,
@@ -291,9 +291,68 @@ describe('Auth - Login', () => {
         expect(checkPass).toHaveBeenCalled();
         expect(checkPass).toHaveBeenCalledTimes(1);
         expect(checkPass).toHaveBeenCalledWith('correctPassword', 'hashed_password');
-        
+
         expect(generateJWT).toHaveBeenCalled();
         expect(generateJWT).toHaveBeenCalledTimes(1);
-        expect(checkPass).toHaveBeenCalledWith(1);
+        expect(generateJWT).toHaveBeenCalledWith(1);
     });
 });
+
+describe('Get /api/budgets', () => {
+    let jwt: string;
+    beforeAll(() => {
+        jest.restoreAllMocks();
+    });
+
+    beforeAll(async () => {
+        const res = await request(server)
+            .post('/api/auth/login')
+            .send({
+                email: 'test@test.code',
+                password: 'password'
+            });
+        jwt = res.body;
+    });
+
+    it('should reject unauthenticated access to budgets without jwt', async () => {
+        const res = await request(server)
+            .get('/api/budgets');
+
+        expect(res.status).toBe(401);
+        expect(res.body.error).toBe('No Autorizado');
+    });
+
+    it('should reject unauthenticated access to budgets without a valid jwt', async () => {
+        const res = await request(server)
+            .get('/api/budgets')
+            .auth('not_valid', { type: 'bearer' });
+
+        expect(res.status).toBe(500);
+        expect(res.body.error).toBe('Token no válido');
+    });
+
+    it('should allow auth access to budget with a valid jwt', async () => {
+        const res = await request(server)
+            .get('/api/budgets')
+            .auth(jwt, { type: 'bearer' });
+
+        expect(res.body).toHaveLength(0);
+
+        expect(res.status).not.toBe(401);
+        expect(res.body.error).not.toBe('No Autorizado');
+    });
+});
+
+describe('Get /api/budgets', () => {
+    let jwt: string;
+    beforeAll(async () => {
+        const res = await request(server)
+            .post('/api/auth/login')
+            .send({
+                email: 'test@test.code',
+                password: 'password'
+            });
+        jwt = res.body;
+        expect(res.status).toBe(200)
+    });
+})
