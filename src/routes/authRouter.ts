@@ -18,7 +18,7 @@ router.post('/create-account',
     AuthController.createAcount
 );
 
-router.post('/confrim-account',
+router.post('/confirm-account',
     limiter,
     body('token')
         .isLength({ min: 6, max: 6 })
