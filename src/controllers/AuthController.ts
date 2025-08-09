@@ -84,10 +84,10 @@ export class AuthController {
     }
 
     static forgotPass = async (req: Request, res: Response) => {
-        const { email, password } = req.body;
+        const { email } = req.body;
         const user = await User.findOne({ where: { email } });
         if (!user) {
-            const { message } = new Error('El usuario ya existe');
+            const { message } = new Error('Usuario no encontrado');
             res.status(409).json({ error: message });
             return;
         }

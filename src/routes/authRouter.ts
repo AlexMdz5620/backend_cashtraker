@@ -65,7 +65,7 @@ router.post('/reset-password/:token',
     AuthController.resetPassWithToken
 );
 
-router.post('/user',
+router.get('/user',
     auth,
     AuthController.user
 );
