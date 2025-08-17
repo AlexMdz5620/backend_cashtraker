@@ -3,7 +3,7 @@ import { BudgetController } from "../controllers/BudgetController";
 import { handleInputErrors } from "../middleware/validator";
 import { hasAccess, validateBundgeExists, validateBundgeInput, validateBundgetId } from "../middleware/budget";
 import { ExpensesController } from "../controllers/ExpenseController";
-import { validateExpenseExists, validateExpenseId, validateExpenseInput } from "../middleware/expense";
+import { belongsToBudget, validateExpenseExists, validateExpenseId, validateExpenseInput } from "../middleware/expense";
 import { auth } from "../middleware/auth";
 
 const router = Router();
@@ -19,6 +19,7 @@ router.param('budgetId', hasAccess);
 
 router.param('expenseId', validateExpenseId);
 router.param('expenseId', validateExpenseExists);
+router.param('expenseId', belongsToBudget);
 
 router.get('/:budgetId', BudgetController.getById);
 router.put('/:budgetId', validateBundgeInput, handleInputErrors, BudgetController.updateById);
