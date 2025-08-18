@@ -70,6 +70,11 @@ router.get('/user',
     AuthController.user
 );
 
+router.put('/user',
+    auth,
+    AuthController.updateUser
+);
+
 router.post('/update-password',
     auth,
     body('current_password')

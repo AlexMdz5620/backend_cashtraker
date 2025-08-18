@@ -133,9 +133,32 @@ export class AuthController {
 
         res.json('El password se modificó correctamente');
     }
-    
+
     static user = async (req: Request, res: Response) => {
         res.json(req.user);
+    }
+
+    static updateUser = async (req: Request, res: Response) => {
+        const { name, email } = req.body;
+
+        try {
+            const existingUser = await User.findOne({ where: { email } });
+            if (existingUser && existingUser.id !== req.user.id) {
+                const { message } = new Error('El usuario con este email ya está registrado');
+                res.status(409).json({ error: message });
+                return;
+            }
+
+            await User.update({ name, email }, {
+                where: { id: req.user.id }
+            });
+
+            res.json('Perfil actualizado correctamente');
+        } catch (error) {
+            // console.log(error);
+            res.status(500).json('Hubo un error')
+        }
+
     }
 
     static updateCurrUserPass = async (req: Request, res: Response) => {
@@ -167,7 +190,7 @@ export class AuthController {
             res.status(401).json({ error: message });
             return;
         }
-        
+
         res.json('Password Correcto');
     }
 }
