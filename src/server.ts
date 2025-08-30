@@ -1,5 +1,4 @@
-import express from 'express' 
-import colors from 'colors'
+import express from 'express'
 import morgan from 'morgan'
 import { db } from './config/db'
 import budgetRouter from './routes/budgetRouter'
@@ -9,10 +8,10 @@ export async function connectDB() {
     try {
         await db.authenticate();
         db.sync();
-        // console.log(colors.blue.bold('Conexión exitosa a la DB'));
+        // console.log('Conexión exitosa a la DB');
     } catch (error) {
         // console.error(error);
-        // console.log(colors.red.bold('Falló la conoexión a la DB'));
+        // console.log('Falló la conoexión a la DB');
     }
 }
 
